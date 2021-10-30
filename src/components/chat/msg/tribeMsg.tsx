@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import { ActivityIndicator, Button } from 'react-native-paper'
-import FastImage from 'react-native-fast-image'
+import { StyleSheet, View } from 'react-native'
+import { ActivityIndicator } from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native'
 
 import { useTheme, useStores } from '../../../store'
 import { DEFAULT_TRIBE_SERVER } from '../../../config'
 import { reportError } from '../../../errorHelper'
+import Typography from '../../common/Typography'
+import Avatar from '../../common/Avatar'
+import Button from '../../common/Button'
+import JoinTribe from '../../common/Modals/Tribe/JoinTribe'
 
 interface Tribe {
   name: string
@@ -23,6 +26,7 @@ export default function TribeMessage(props) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [showJoinButton, setShowJoinButton] = useState<boolean>(false)
+  const [joinTribe, setJoinTribe] = useState({ visible: false, tribe: null })
 
   const navigation = useNavigation()
 
@@ -46,14 +50,23 @@ export default function TribeMessage(props) {
   }, [])
 
   function seeTribe() {
-    // ui.setJoinTribeModal(true, tribe)
-    navigation.navigate('Home', { params: { rnd: Math.random() } })
+    if (showJoinButton) {
+      setJoinTribe({
+        visible: true,
+        tribe,
+      })
+    } else {
+      setJoinTribe({
+        visible: true,
+        tribe,
+      })
+    }
   }
 
   if (loading)
     return (
       <View style={styles.wrap}>
-        <ActivityIndicator animating={true} color={theme.subtitle} />
+        <ActivityIndicator size='small' />
       </View>
     )
   if (!(tribe && tribe.uuid)) return <View style={styles.wrap}>Could not load tribe...</View>
@@ -62,31 +75,40 @@ export default function TribeMessage(props) {
   return (
     <View style={{ ...styles.wrap }}>
       <View style={styles.tribeWrap}>
-        <FastImage
-          source={hasImg ? { uri: tribe.img } : require('../../../../android_assets/tent.png')}
-          resizeMode={FastImage.resizeMode.cover}
-          style={{ width: 70, height: 70, flexShrink: 0, minWidth: 75 }}
-        />
+        <Avatar photo={hasImg && tribe.img} size={40} round={90} />
+
         <View style={styles.tribeText}>
-          <Text style={{ ...styles.tribeName, color: theme.title }} numberOfLines={1}>
+          <Typography style={{ ...styles.tribeName }} numberOfLines={1}>
             {tribe.name}
-          </Text>
-          <Text style={{ ...styles.tribeDescription, color: theme.subtitle }} numberOfLines={2}>
+          </Typography>
+          <Typography color={theme.subtitle} numberOfLines={2}>
             {tribe.description}
-          </Text>
+          </Typography>
         </View>
       </View>
-      {showJoinButton && (
-        <Button
-          mode='contained'
-          icon='arrow-right'
-          onPress={seeTribe}
-          accessibilityLabel='see-tribe-button'
-          style={{ width: '100%', marginTop: 12 }}
-        >
-          See Tribe
-        </Button>
-      )}
+
+      <Button
+        onPress={seeTribe}
+        accessibilityLabel='see-community-button'
+        ph={15}
+        h={40}
+        fs={12}
+        round={5}
+        style={{ width: '100%', marginTop: 12 }}
+      >
+        {showJoinButton ? 'Join Community' : 'View Community'}
+      </Button>
+
+      <JoinTribe
+        visible={joinTribe.visible}
+        tribe={joinTribe.tribe}
+        close={() => {
+          setJoinTribe({
+            visible: false,
+            tribe: null,
+          })
+        }}
+      />
     </View>
   )
 }
@@ -112,11 +134,7 @@ const styles = StyleSheet.create({
     maxWidth: 160,
   },
   tribeName: {
-    fontSize: 16,
     marginBottom: 5,
-  },
-  tribeDescription: {
-    fontSize: 14,
   },
 })
 
