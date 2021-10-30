@@ -74,8 +74,12 @@ export class UiStore {
   }
 
   @observable addContactModal: boolean = false
-  @action setAddContactModal(b) {
+  @observable addContactModalView: boolean = false
+  @observable addContactParams: { [k: string]: any } = null
+  @action setAddContactModal(b, c = false, obj = null) {
     this.addContactModal = b
+    this.addContactModalView = c
+    this.addContactParams = obj
   }
 
   @observable subModalParams: { [k: string]: any } = null

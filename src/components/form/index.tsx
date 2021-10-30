@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { Dialog } from 'react-native-paper'
@@ -9,6 +9,7 @@ import Input from './inputs'
 import Button from '../common/Button'
 
 export default function Form(props) {
+  const { forceEnable } = props
   const theme = useTheme()
   const { labelColor = theme.white } = props
   if (!props.schema) return <Text>please provide schema</Text>
@@ -51,7 +52,7 @@ export default function Form(props) {
                   mode={props.buttonMode}
                   accessibilityLabel={props.buttonAccessibilityLabel || 'form-button'}
                   onPress={handleSubmit}
-                  disabled={!props.forceEnable && (!dirty || !isValid)}
+                  disabled={!forceEnable && (!dirty || !isValid)}
                   color={props.btnColor}
                   fs={props.btnFs}
                   size={props.btnSize}

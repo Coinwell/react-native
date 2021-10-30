@@ -3,11 +3,9 @@ import { View, StyleSheet } from 'react-native'
 import { SwipeRow } from 'react-native-swipe-list-view'
 import { IconButton } from 'react-native-paper'
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons'
-import Ionicon from 'react-native-vector-icons/Ionicons'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
 import Popover, { PopoverPlacement } from 'react-native-popover-view'
-import Clipboard from '@react-native-community/clipboard'
 
 import { useTheme, hooks } from '../../../store'
 import { useChatReply } from '../../../store/hooks/chat'
@@ -25,7 +23,10 @@ import Avatar from '../../common/Avatar'
 import MemberRequest from './memberRequest'
 import BotResMsg from './botResMsg'
 import BoostMsg from './boostMsg'
+import Popup from './popup'
 import Typography from '../../common/Typography'
+import { verifyPubKey } from './utils'
+import PubKey from './pubKey'
 
 const { useMsgs } = hooks
 
@@ -160,21 +161,20 @@ export default function MsgRow(props) {
   )
 }
 
-const isMsgBiggerThanScreen = (msgHeight: number) => msgHeight > SCREEN_HEIGHT - 300
+const isMsgBiggerThanScreen = (msgHeight: number) => msgHeight > SCREEN_HEIGHT - 400
 
 function MsgBubble(props) {
   const theme = useTheme()
 
   const [popoverPlacement, setPopoverPlacement] = useState(PopoverPlacement.BOTTOM)
   const [showPopover, setShowPopover] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const msgRefHeight = useRef<number>(0)
 
   const isInvoice = props.type === constants.message_types.invoice
   const isPaid = props.status === constants.statuses.confirmed
   const isMe = props.sender === props.myid
   const isDeleted = props.status === constants.statuses.deleted
-  const allowBoost = !isMe && !(props.message_content || '').startsWith('boost::')
+  const { isPubKey, pubKey } = verifyPubKey(props.message_content)
 
   let backgroundColor = isMe ? (theme.dark ? theme.main : theme.lightGrey) : theme.bg
   if (isInvoice && !isPaid) {
@@ -193,21 +193,10 @@ function MsgBubble(props) {
     })
     setShowPopover(true)
   }
-  const onCopyHandler = () => {
-    Clipboard.setString(props.message_content || '')
-    onRequestCloseHandler()
-  }
+
   const onBoostHandler = async () => {
     await props.onBoostMsg(props)
     onRequestCloseHandler()
-  }
-  const onDeleteHandler = async () => {
-    if (!deleting) {
-      setDeleting(true)
-      await props.onDelete(props.id)
-      setDeleting(false)
-      onRequestCloseHandler()
-    }
   }
 
   return (
@@ -223,69 +212,76 @@ function MsgBubble(props) {
         borderRadius: 40,
         minWidth: 140,
       }}
+      verticalOffset={isPubKey ? (isMe ? -75 : -125) : 0}
       from={
         <View
           style={{
-            ...sharedStyles.bubble,
             alignSelf: isMe ? 'flex-end' : 'flex-start',
-            backgroundColor,
-            borderColor: !isMe ? theme.border : 'transparent',
             overflow: 'hidden',
           }}
-          onLayout={(event) => {
-            msgRefHeight.current = event.nativeEvent.layout.height
-          }}
         >
-          {isDeleted ? <DeletedMsg /> : null}
-          {!isDeleted && (props.reply_uuid ? true : false) ? (
-            <ReplyContent
-              content={props.reply_message_content}
-              senderAlias={props.reply_message_sender_alias}
-              replyMessageExtraContent={replyMessage}
-            />
-          ) : null}
-          {!isDeleted ? (
-            <Message
-              {...props}
-              id={props.id}
-              onLongPress={onLongPressHandler}
-              myAlias={props.myAlias}
-              myid={props.myid}
-            />
-          ) : null}
+          <View
+            style={{
+              ...sharedStyles.bubble,
+              backgroundColor,
+              borderColor: !isMe ? theme.border : 'transparent',
+            }}
+            onLayout={(event) => {
+              msgRefHeight.current = event.nativeEvent.layout.height
+            }}
+          >
+            <View>
+              {isDeleted ? <DeletedMsg /> : null}
+              {!isDeleted && (props.reply_uuid ? true : false) ? (
+                <ReplyContent
+                  content={props.reply_message_content}
+                  senderAlias={props.reply_message_sender_alias}
+                  replyMessageExtraContent={replyMessage}
+                />
+              ) : null}
+              {!isDeleted ? (
+                <Message
+                  {...props}
+                  id={props.id}
+                  onLongPress={onLongPressHandler}
+                  myAlias={props.myAlias}
+                  myid={props.myid}
+                />
+              ) : null}
+            </View>
+          </View>
+
+          {isPubKey && (
+            <View
+              style={{
+                ...sharedStyles.bubble,
+                alignSelf: isMe ? 'flex-end' : 'flex-start',
+                backgroundColor,
+                borderColor: !isMe ? theme.border : 'transparent',
+                overflow: 'hidden',
+              }}
+            >
+              <PubKey
+                isMe={isMe}
+                myAlias={props.myAlias}
+                pubKey={pubKey}
+                senderPic={props.senderPic}
+                senderAlias={props.senderAlias}
+                onLongPressHandler={onLongPressHandler}
+              />
+            </View>
+          )}
         </View>
       }
     >
-      {allowBoost ? (
-        <IconButton
-          onPress={onBoostHandler}
-          icon={() => <Ionicon name='rocket' color={theme.primary} size={20} />}
-          style={{
-            backgroundColor: theme.lightGrey,
-            marginHorizontal: 14,
-          }}
-        />
-      ) : null}
-
-      <IconButton
-        onPress={onCopyHandler}
-        icon={() => <Ionicon name='copy' color={theme.darkGrey} size={20} />}
-        style={{
-          backgroundColor: theme.lightGrey,
-          marginHorizontal: 14,
-        }}
+      <Popup
+        id={props.id}
+        isMe={isMe}
+        messageContent={props.message_content}
+        onRequestCloseHandler={onRequestCloseHandler}
+        onBoostHandler={onBoostHandler}
+        onDelete={props.onDelete}
       />
-      {(isMe || props.isTribeOwner) && (
-        <IconButton
-          onPress={onDeleteHandler}
-          icon={() => <Ionicon name='trash' color={theme.red} size={20} />}
-          color={theme.red}
-          style={{
-            backgroundColor: theme.lightGrey,
-            marginHorizontal: 14,
-          }}
-        />
-      )}
     </Popover>
   )
 }

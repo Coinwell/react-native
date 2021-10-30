@@ -45,3 +45,7 @@ export function isIphoneXorAbove() {
 export async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export const hasWhiteSpace = (s) => {
+  return /\s/g.test(s)
+}

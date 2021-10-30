@@ -2,6 +2,7 @@ import moment from 'moment'
 import url from 'url'
 import * as linkify from 'linkifyjs'
 import { constants } from '../../../constants'
+import { hasWhiteSpace } from '../../utils/utils'
 
 export function calcExpiry(props) {
   const isInvoice = props.type === constants.message_types.invoice
@@ -40,4 +41,30 @@ export const getYoutubeVideoID = (link: string) => {
 export const getQueryParamFromLink = (link: string, queryParam: string) => {
   const urlParams = url.parse(link, true)
   return urlParams.query?.[queryParam] ?? ''
+}
+
+export const verifyPubKey = (messageContent: string): any => {
+  if (!messageContent || messageContent.length <= 0) return false
+
+  let isPubKey = false
+  let pubKey = ''
+  const words = messageContent.split(' ')
+
+  const isValid = (text) => {
+    return text.length === 66 && !hasWhiteSpace(text) && !text.startsWith('boost')
+  }
+
+  if (words.length === 1) {
+    pubKey = words[0] || messageContent
+    isPubKey = isValid(pubKey)
+  } else {
+    words.map((word) => {
+      isPubKey = isValid(word)
+      if (isPubKey) {
+        pubKey = word
+      }
+    })
+  }
+
+  return { isPubKey, pubKey }
 }

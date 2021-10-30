@@ -52,6 +52,8 @@ const MsgListWrap = ({ chat, pricePerMessage }: { chat: Chat; pricePerMessage: n
 
   const onDelete = useCallback(
     async (id) => {
+      console.log('id', id)
+
       await msg.deleteMessage(id)
     },
     [msg]
