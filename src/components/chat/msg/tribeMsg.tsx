@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, View, TouchableOpacity } from 'react-native'
 import { ActivityIndicator } from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native'
 
 import { useTheme, useStores } from '../../../store'
 import { DEFAULT_TRIBE_SERVER } from '../../../config'
 import { reportError } from '../../../errorHelper'
+import shared from './sharedStyles'
+import BoostRow from './boostRow'
 import Typography from '../../common/Typography'
 import Avatar from '../../common/Avatar'
 import Button from '../../common/Button'
@@ -32,7 +34,9 @@ export default function TribeMessage(props) {
 
   async function loadTribe() {
     const p = extractURLSearchParams(props.message_content)
+
     const tribeParams = await getTribeDetails(p['host'], p['uuid'])
+
     if (tribeParams) {
       setTribe(tribeParams)
     } else {
@@ -69,35 +73,47 @@ export default function TribeMessage(props) {
         <ActivityIndicator size='small' />
       </View>
     )
-  if (!(tribe && tribe.uuid)) return <View style={styles.wrap}>Could not load tribe...</View>
+  if (!(tribe && tribe.uuid))
+    return (
+      <TouchableOpacity activeOpacity={0.8} style={shared.innerPad} onLongPress={props.onLongPressHandler}>
+        <Typography color={theme.purple}>Could not load community...</Typography>
+      </TouchableOpacity>
+    )
 
   const hasImg = tribe.img ? true : false
   return (
-    <View style={{ ...styles.wrap }}>
-      <View style={styles.tribeWrap}>
-        <Avatar photo={hasImg && tribe.img} size={40} round={90} />
-
-        <View style={styles.tribeText}>
-          <Typography style={{ ...styles.tribeName }} numberOfLines={1}>
-            {tribe.name}
-          </Typography>
-          <Typography color={theme.subtitle} numberOfLines={2}>
-            {tribe.description}
-          </Typography>
+    <>
+      <TouchableOpacity activeOpacity={0.8} style={shared.innerPad} onLongPress={props.onLongPressHandler}>
+        <View style={styles.tribeWrap}>
+          <Avatar photo={hasImg && tribe.img} size={40} round={90} />
+          <View style={styles.tribeText}>
+            <Typography style={{ ...styles.tribeName }} numberOfLines={1}>
+              {tribe.name}
+            </Typography>
+            <Typography color={theme.subtitle} numberOfLines={2}>
+              {tribe.description}
+            </Typography>
+          </View>
         </View>
-      </View>
 
-      <Button
-        onPress={seeTribe}
-        accessibilityLabel='see-community-button'
-        ph={15}
-        h={40}
-        fs={12}
-        round={5}
-        style={{ width: '100%', marginTop: 12 }}
-      >
-        {showJoinButton ? 'Join Community' : 'View Community'}
-      </Button>
+        <Button
+          onPress={seeTribe}
+          accessibilityLabel='see-community-button'
+          ph={15}
+          h={40}
+          fs={12}
+          round={5}
+          style={{ width: '100%', marginTop: 12 }}
+        >
+          {showJoinButton ? 'Join Community' : 'View Community'}
+        </Button>
+
+        {props.showBoostRow && (
+          <View style={{ marginTop: 8 }}>
+            <BoostRow {...props} myAlias={props.myAlias} />
+          </View>
+        )}
+      </TouchableOpacity>
 
       <JoinTribe
         visible={joinTribe.visible}
@@ -109,7 +125,7 @@ export default function TribeMessage(props) {
           })
         }}
       />
-    </View>
+    </>
   )
 }
 
@@ -132,6 +148,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginLeft: 8,
     maxWidth: 160,
+    flex: 1,
   },
   tribeName: {
     marginBottom: 5,
@@ -144,6 +161,7 @@ async function getTribeDetails(host: string, uuid: string) {
   try {
     const r = await fetch(`https://${theHost}/tribes/${uuid}`)
     const j = await r.json()
+
     if (j.bots) {
       try {
         const bots = JSON.parse(j.bots)

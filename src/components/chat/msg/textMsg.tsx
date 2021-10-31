@@ -6,7 +6,7 @@ import * as linkify from 'linkifyjs'
 
 import { useTheme } from '../../../store'
 import { useParsedGiphyMsg } from '../../../store/hooks/msg'
-import { getRumbleLink, getYoutubeLink, verifyPubKey } from './utils'
+import { getRumbleLink, getYoutubeLink, verifyCommunity, verifyPubKey } from './utils'
 import shared from './sharedStyles'
 import ClipMessage from './clipMsg'
 import BoostMessage from './boostMsg'
@@ -26,8 +26,8 @@ export default function TextMsg(props) {
   const isClip = message_content && message_content.startsWith('clip::')
   const isBoost = message_content?.startsWith('boost::')
   const isLink = linkify.find(message_content, 'url').length > 0
-  const isCommunity = message_content && message_content.startsWith('zion.chat://?action=tribe')
   const { isPubKey } = verifyPubKey(message_content)
+  const isCommunity = verifyCommunity(message_content)
 
   const onLongPressHandler = () => props.onLongPress(props)
 
@@ -83,13 +83,13 @@ export default function TextMsg(props) {
   }
 
   if (isCommunity) {
-    return <TribeMsg {...props} />
+    return <TribeMsg {...props} showBoostRow={showBoostRow} onLongPressHandler={onLongPressHandler} />
   }
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      style={isLink ? { width: 280, padding: 7, minHeight: 72 } : shared.innerPad}
+      style={isLink ? { width: 280, minHeight: 72, ...shared.innerPad } : shared.innerPad}
       onLongPress={onLongPressHandler}
     >
       {isLink ? (

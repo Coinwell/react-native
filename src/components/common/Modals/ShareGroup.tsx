@@ -5,7 +5,6 @@ import Share from 'react-native-share'
 import Clipboard from '@react-native-community/clipboard'
 import Toast from 'react-native-simple-toast'
 import QRCode from 'react-native-qrcode-svg'
-import { isIphoneX, getBottomSpace } from 'react-native-iphone-x-helper'
 
 import { useStores, useTheme } from '../../../store'
 import { DEFAULT_DOMAIN } from '../../../config'
@@ -13,21 +12,24 @@ import { SCREEN_WIDTH, TOAST_DURATION } from '../../../constants'
 import ModalWrap from './ModalWrap'
 import ModalHeader from './ModalHeader'
 import Button from '../Button'
-import Typography from '../Typography'
 import { reportError } from '../../../errorHelper'
 
 export default function ShareGroup() {
   const { ui, chats } = useStores()
   const theme = useTheme()
 
+  const uuid = ui.shareTribeUUID
+  const host = chats.getDefaultTribeServer().host
+  const qr = `${DEFAULT_DOMAIN}://?action=tribe&uuid=${uuid}&host=${host}`
+
   function copy() {
-    Clipboard.setString(uuid)
-    Toast.showWithGravity('Tribe QR Copied!', TOAST_DURATION, Toast.CENTER)
+    Clipboard.setString(qr)
+    Toast.showWithGravity('Community QR Copied!', TOAST_DURATION, Toast.TOP)
   }
 
   async function share() {
     try {
-      await Share.open({ message: uuid })
+      await Share.open({ message: qr })
     } catch (e) {
       reportError(e)
     }
@@ -36,10 +38,6 @@ export default function ShareGroup() {
   function close() {
     ui.setShareTribeUUID(null)
   }
-
-  const uuid = ui.shareTribeUUID
-  const host = chats.getDefaultTribeServer().host
-  const qr = `${DEFAULT_DOMAIN}://?action=tribe&uuid=${uuid}&host=${host}`
 
   return useObserver(() => (
     <ModalWrap visible={ui.shareTribeUUID ? true : false} onClose={close}>

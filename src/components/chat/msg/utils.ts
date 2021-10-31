@@ -68,3 +68,8 @@ export const verifyPubKey = (messageContent: string): any => {
 
   return { isPubKey, pubKey }
 }
+
+export const verifyCommunity = (messageContent: string): any => {
+  if (!messageContent || messageContent.length <= 0) return false
+  return messageContent && messageContent.startsWith('zion.chat://?action=tribe')
+}
