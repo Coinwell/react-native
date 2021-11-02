@@ -71,5 +71,21 @@ export const verifyPubKey = (messageContent: string): any => {
 
 export const verifyCommunity = (messageContent: string): any => {
   if (!messageContent || messageContent.length <= 0) return false
-  return messageContent && messageContent.startsWith('zion.chat://?action=tribe')
+
+  let isCommunity = false
+  const words = messageContent.split(' ')
+
+  const isValid = (text) => {
+    return text.startsWith('zion.chat://?action=tribe')
+  }
+
+  if (words.length === 1) {
+    isCommunity = isValid(messageContent)
+  } else {
+    words.map((word) => {
+      isCommunity = isValid(word)
+    })
+  }
+
+  return isCommunity
 }

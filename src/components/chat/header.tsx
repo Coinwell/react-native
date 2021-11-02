@@ -10,7 +10,7 @@ import { useStores, useTheme, hooks } from '../../store'
 import { Chat } from '../../store/chats'
 import { contactForConversation } from './utils'
 import { useChatPicSrc } from '../utils/picSrc'
-import { constants } from '../../constants'
+import { constants, SCREEN_WIDTH } from '../../constants'
 import { RouteStatus } from './chat'
 import Avatar from '../common/Avatar'
 import Typography from '../common/Typography'
@@ -109,7 +109,7 @@ const Header = ({ chat, status, tribeParams, podId, pricePerMinute }: HeaderProp
         borderBottomColor: theme.border,
       }}
     >
-      <View style={styles.row}>
+      <View style={{ ...styles.row }}>
         <TouchableOpacity onPress={onBackPress} style={{ marginLeft: 6, marginRight: 6 }}>
           <FeatherIcon name='chevron-left' size={28} color={theme.icon} />
         </TouchableOpacity>
@@ -122,13 +122,10 @@ const Header = ({ chat, status, tribeParams, podId, pricePerMinute }: HeaderProp
             <View
               style={{
                 ...styles.row,
+                width: SCREEN_WIDTH - 180,
               }}
             >
-              <Typography
-                size={16}
-                numberOfLines={1}
-                // style={{ width: name?.length > 20 ? SCREEN_WIDTH - 180 : 'auto' }}
-              >
+              <Typography size={16} numberOfLines={1}>
                 {name}
               </Typography>
 
@@ -148,7 +145,14 @@ const Header = ({ chat, status, tribeParams, podId, pricePerMinute }: HeaderProp
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={{ marginRight: 6 }} onPress={onChatInfoPress}>
+      <TouchableOpacity
+        style={{
+          marginRight: 16,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}
+        onPress={onChatInfoPress}
+      >
         <FeatherIcon name='info' size={24} color={theme.icon} />
       </TouchableOpacity>
     </Appbar.Header>

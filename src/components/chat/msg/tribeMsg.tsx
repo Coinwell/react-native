@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useTheme, useStores } from '../../../store'
 import { DEFAULT_TRIBE_SERVER } from '../../../config'
 import { reportError } from '../../../errorHelper'
+import { verifyCommunity } from './utils'
 import shared from './sharedStyles'
 import BoostRow from './boostRow'
 import Typography from '../../common/Typography'
@@ -84,6 +85,8 @@ export default function TribeMessage(props) {
   return (
     <>
       <TouchableOpacity activeOpacity={0.8} style={shared.innerPad} onLongPress={props.onLongPressHandler}>
+        <Typography style={{ marginBottom: 10 }}>{props.message_content}</Typography>
+
         <View style={styles.tribeWrap}>
           <Avatar photo={hasImg && tribe.img} size={40} round={90} />
           <View style={styles.tribeText}>
@@ -140,14 +143,13 @@ const styles = StyleSheet.create({
   },
   tribeWrap: {
     display: 'flex',
-    justifyContent: 'center',
     flexDirection: 'row',
   },
   tribeText: {
     display: 'flex',
     flexDirection: 'column',
     marginLeft: 8,
-    maxWidth: 160,
+    // maxWidth: 160,
     flex: 1,
   },
   tribeName: {

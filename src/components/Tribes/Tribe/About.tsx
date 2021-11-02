@@ -3,7 +3,6 @@ import { StyleSheet, View, Linking } from 'react-native'
 import { useObserver } from 'mobx-react-lite'
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
-import * as linkify from 'linkifyjs'
 import Hyperlink from 'react-native-hyperlink'
 
 import { useStores, useTheme, hooks } from '../../../store'
@@ -19,7 +18,6 @@ const { useTribes } = hooks
 
 function About({ tribe }) {
   const theme = useTheme()
-  const isLink = linkify.find(tribe.description, 'url').length > 0
 
   return useObserver(() => {
     const { createdDate, lastActiveDate } = useTribeHistory(tribe.created, tribe.last_active)

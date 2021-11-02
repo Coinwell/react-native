@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { StyleSheet, View, Modal, SafeAreaView, ScrollView, KeyboardAvoidingView } from 'react-native'
+import { StyleSheet, View, Modal, SafeAreaView, ScrollView, KeyboardAvoidingView, Linking } from 'react-native'
 import { useObserver } from 'mobx-react-lite'
 // import { useNavigation } from '@react-navigation/native'
 import Video from 'react-native-video'
 import { IconButton, TextInput } from 'react-native-paper'
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Hyperlink from 'react-native-hyperlink'
 
 import { useStores, useTheme, hooks } from '../../../../store'
 import { navigate } from '../../../Navigation'
@@ -99,18 +100,27 @@ function JoinTribe(props) {
                     >
                       {tribe.name}
                     </Typography>
-                    <Typography
-                      color={theme.subtitle}
-                      style={{
-                        marginTop: 10,
-                        marginBottom: 10,
-                        maxWidth: 340,
-                        textAlign: 'center',
-                        marginHorizontal: 'auto',
+
+                    <Hyperlink
+                      linkStyle={{ color: theme.blue }}
+                      onPress={(url) => {
+                        Linking.openURL(url)
                       }}
                     >
-                      {tribe.description}
-                    </Typography>
+                      <Typography
+                        color={theme.subtitle}
+                        style={{
+                          marginTop: 10,
+                          marginBottom: 10,
+                          maxWidth: 340,
+                          textAlign: 'center',
+                          marginHorizontal: 'auto',
+                        }}
+                      >
+                        {tribe.description}
+                      </Typography>
+                    </Hyperlink>
+
                     <View style={{ ...styles.table, borderColor: theme.border }}>
                       {prices &&
                         prices.map((p, i) => {
@@ -160,7 +170,7 @@ function JoinTribe(props) {
                         >
                           You already joined this community.
                         </Typography>
-                        <Button w={300} onPress={finish} ph={20} style={{ marginVertically: 20 }}>
+                        <Button w={300} onPress={finish} ph={20} style={{ marginBottom: 20 }}>
                           Go to {tribeToCheck?.name}
                         </Button>
                       </>

@@ -14,6 +14,7 @@ import { useStores, useTheme, hooks } from '../../../store'
 import { useTribeMediaType } from '../../../store/hooks/tribes'
 import shared from './sharedStyles'
 import { useCachedEncryptedFile } from './hooks'
+import { getRumbleLink, getYoutubeLink, verifyCommunity } from './utils'
 import AudioPlayer from './audioPlayer'
 import { parseLDAT } from '../../utils/ldat'
 import FileMsg from './fileMsg'
@@ -23,7 +24,7 @@ import Button from '../../common/Button'
 import PhotoViewer from '../../common/Modals/Media/PhotoViewer'
 import { setTint } from '../../common/StatusBar'
 import EmbedVideo from './embedVideo'
-import { getRumbleLink, getYoutubeLink } from './utils'
+import TribeMsg from './tribeMsg'
 
 const { useMsgs } = hooks
 
@@ -36,6 +37,7 @@ export default function MediaMsg(props) {
   const { meme, msg } = useStores()
   const theme = useTheme()
   const isMe = props.sender === props.myid
+  const isCommunity = verifyCommunity(message_content)
 
   let ldat = parseLDAT(media_token)
   let amt = null
@@ -197,7 +199,9 @@ export default function MediaMsg(props) {
             </View>
           )}
 
-          {hasContent && (
+          {isCommunity && <TribeMsg {...props} onLongPressHandler={onLongPressHandler} />}
+
+          {hasContent && !isCommunity && (
             <View style={styles.msgContentWrap}>
               <Typography size={14} color={theme.subtitle}>
                 {message_content}
@@ -262,6 +266,7 @@ export default function MediaMsg(props) {
             )}
           </>
         )}
+
         <PhotoViewer
           visible={mediaModal}
           close={() => {
@@ -344,7 +349,8 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   photo: {
-    width: 200,
+    width: 'auto',
+    minWidth: 200,
     height: 200,
   },
   stats: {
